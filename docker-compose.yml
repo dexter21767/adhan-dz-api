@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  extractor:
+    build:
+      context: ./extractor
+    volumes:
+      - ./db:/db
+    environment:
+      - DB_DIR=/db
+      - TZ=Africa/Algiers
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./db:/app/db
+    environment:
+      - PORT=3000
+      - META_DIR=/app/db
+      - TZ=Africa/Algiers
+    restart: always
