@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   extractor:
     build:
@@ -9,7 +7,7 @@ services:
     environment:
       - DB_DIR=/db
       - TZ=Africa/Algiers
-    restart: unless-stopped
+    restart: no
 
   server:
     build:
@@ -23,3 +21,4 @@ services:
       - META_DIR=/app/db
       - TZ=Africa/Algiers
     restart: always
+    hostname: adhan-server
