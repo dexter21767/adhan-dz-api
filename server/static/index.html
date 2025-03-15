@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adhan DZ API Documentation</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="api-container">
+        <h1>Welcome to Adhan DZ API</h1>
+        
+        <p>This API provides prayer times for cities in Algeria. Below are the available endpoints and their usage.</p>
+        
+        <h2>Available Endpoints</h2>
+        
+        <div class="endpoint">
+            <h3><span class="method get">GET</span> /cities</h3>
+            <p>Retrieve a list of cities with their IDs and names.</p>
+            
+            <h4>Response Example:</h4>
+            <pre class="response-example">[
+  {
+    "_id": 1,
+    "name": "Adrar",
+    "parentId": null
+  },
+  {
+    "_id": 2,
+    "name": "Chlef",
+    "parentId": null
+  },
+  ...
+]</pre>
+            
+            <a href="/api-test.html" class="try-it-out">Try it out</a>
+        </div>
+        
+        <div class="endpoint">
+            <h3><span class="method get">GET</span> /prayerTimes</h3>
+            <p>Retrieve prayer times for a specific city and date range.</p>
+            
+            <h4>Query Parameters:</h4>
+            <table class="parameter-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="parameter-name">cityId</td>
+                        <td class="parameter-type">integer</td>
+                        <td>No</td>
+                        <td>Use ParentId if present, or _id if ParentId = null</td>
+                    </tr>
+                    <tr>
+                        <td class="parameter-name">startDate</td>
+                        <td class="parameter-type">string</td>
+                        <td>No</td>
+                        <td>The start date in YYYY-MM-DD format (defaults to today if not provided)</td>
+                    </tr>
+                    <tr>
+                        <td class="parameter-name">endDate</td>
+                        <td class="parameter-type">string</td>
+                        <td>No</td>
+                        <td>The end date in YYYY-MM-DD format (if not provided, only returns data for the start date)</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h4>Response Example:</h4>
+            <pre class="response-example">[
+  {
+    "date": "2025-03-15",
+    "fajr": "05:14",
+    "sunrise": "06:40",
+    "dhuhr": "12:55",
+    "asr": "16:23",
+    "maghrib": "19:10",
+    "isha": "20:36"
+  },
+  {
+    "date": "2025-03-16",
+    "fajr": "05:12",
+    "sunrise": "06:39",
+    "dhuhr": "12:54",
+    "asr": "16:24",
+    "maghrib": "19:11",
+    "isha": "20:37"
+  }
+]</pre>
+            
+            <div class="note">
+                <p><strong>Note:</strong> If the end date is more than 30 days after the start date, it will be changed to 30 days after the start date.</p>
+            </div>
+            
+            <a href="/api-test.html" class="try-it-out">Try it out</a>
+        </div>
+        
+        <h2>Error Handling</h2>
+        <p>All errors will be returned with appropriate HTTP status codes and a JSON body containing an error message.</p>
+        
+        <pre class="response-example">{
+  "error": "Invalid date format. Use YYYY-MM-DD."
+}</pre>
+        
+        <h2>Rate Limiting</h2>
+        <p>This API is rate-limited to 100 requests per hour per IP address. If you exceed this limit, you'll receive a 429 status code.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adhan DZ API Tester</title>
+    <link rel="stylesheet" href="api-test.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Adhan DZ API Tester</h1>
+        
+        <div class="form-group">
+            <div class="row">
+                <div class="col">
+                    <label for="cityId">City:</label>
+                    <select id="cityId">
+                        <option value="">-- Select a city --</option>
+                        <!-- Cities will be populated here -->
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate" placeholder="YYYY-MM-DD">
+                </div>
+                <div class="col">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate" placeholder="YYYY-MM-DD">
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <button id="sendRequest">Send Request</button>
+            <button id="resetForm" class="reset-button">Reset</button>
+        </div>
+        
+        <div id="loading" class="loading">Loading...</div>
+        
+        <div class="result">
+            <h2>Request URL:</h2>
+            <div id="requestUrl" class="url">No request made yet</div>
+            
+            <h2>Response:</h2>
+            <div id="response" class="response">No response yet</div>
+        </div>
+    </div>
+
+    <script src="api-test.js"></script>
+</body>
+</html>
