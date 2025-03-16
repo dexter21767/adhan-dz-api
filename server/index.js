@@ -5,7 +5,15 @@ const Database = require('./db');
 const app = express();
 const db = new Database(config);
 
-app.use('/', express.static('static'));
+const cacheStatic = {
+    setHeaders: (res, path) => {
+        // Cache for 1 day
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+};
+
+app.use('/', express.static('static',cacheStatic));
+app.use('/db', express.static(config.metaDir, cacheStatic));
 
 app.get('/cities', async (req, res) => {
     db.getCities().then((cities) => {
