@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'adhan_dz_city_selection';
-const API_BASE_URL = '';
+const API_BASE_URL = 'https://adhan-dz.dexter21767.com';
 const ALGIERS_TZ = 'Africa/Algiers';
 
 const PRAYER_FIELDS = [
@@ -40,6 +40,10 @@ const localClockFormatter = new Intl.DateTimeFormat('en-US', {
 
 const citySelect = document.getElementById('citySelect');
 const refreshBtn = document.getElementById('refreshBtn');
+const controlsSection = document.querySelector('.controls');
+const cityQuickBar = document.getElementById('cityQuickBar');
+const cityQuickLabel = document.getElementById('cityQuickLabel');
+const changeCityBtn = document.getElementById('changeCityBtn');
 const pageTitleEl = document.getElementById('pageTitle');
 const todayDisplayEl = document.getElementById('todayDisplay');
 const selectedCityNameEl = document.getElementById('selectedCityName');
@@ -65,6 +69,15 @@ const prayerCardMap = new Map();
 function applyDirectionByLanguage() {
     const language = (document.documentElement.lang || 'ar').toLowerCase();
     document.documentElement.dir = language.startsWith('ar') ? 'rtl' : 'ltr';
+}
+
+function setControlsCollapsed(collapsed) {
+    controlsSection.classList.toggle('collapsed', collapsed);
+    cityQuickBar.classList.toggle('hidden', !collapsed);
+}
+
+function updateQuickCityLabel(cityName) {
+    cityQuickLabel.textContent = `المدينة: ${cityName || '-'}`;
 }
 
 function registerServiceWorker() {
@@ -362,6 +375,7 @@ async function loadPrayerTimesForSelectedCity() {
     const cityName = selectedOption.textContent;
     state.cityName = cityName;
     selectedCityNameEl.textContent = cityName;
+    updateQuickCityLabel(cityName);
     pageTitleEl.textContent = `مواقيت الصلاة والأذان - ${cityName}`;
     setStatus('جار تحميل المواقيت... | Loading prayer times...');
 
@@ -429,6 +443,7 @@ async function init() {
 
         const hasExactSavedCity = normalizedCities.some((city) => city.selectId === savedCityId);
         citySelect.value = hasExactSavedCity ? savedCityId : normalizedCities[0].selectId;
+        setControlsCollapsed(hasExactSavedCity);
 
         await loadPrayerTimesForSelectedCity();
     } catch (error) {
@@ -438,5 +453,9 @@ async function init() {
 
 citySelect.addEventListener('change', loadPrayerTimesForSelectedCity);
 refreshBtn.addEventListener('click', loadPrayerTimesForSelectedCity);
+changeCityBtn.addEventListener('click', () => {
+    setControlsCollapsed(false);
+    citySelect.focus();
+});
 
 init();
