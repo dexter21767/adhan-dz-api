@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Populate the dropdown
             cities.forEach(city => {
                 const option = document.createElement('option');
-                option.value = city.ParentId || city.cityId;
+                option.value = city.ParentId || city._id;
                 option.textContent = city.MADINA_NAME;
                 citySelect.appendChild(option);
             });

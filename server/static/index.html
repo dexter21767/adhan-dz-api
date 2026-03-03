@@ -1,115 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adhan DZ API Documentation</title>
+    <meta name="theme-color" content="#5d7600">
+    <title>أذان الجزائر | مواقيت الصلاة</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/icons/fajr.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <div class="api-container">
-        <h1>Welcome to Adhan DZ API</h1>
-        
-        <p>This API provides prayer times for cities in Algeria. Below are the available endpoints and their usage.</p>
-        
-        <h2>Available Endpoints</h2>
-        
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> /cities</h3>
-            <p>Retrieve a list of cities with their IDs and names.</p>
-            
-            <h4>Response Example:</h4>
-            <pre class="response-example">[
-  {
-    "_id": 1,
-    "name": "Adrar",
-    "parentId": null
-  },
-  {
-    "_id": 2,
-    "name": "Chlef",
-    "parentId": null
-  },
-  ...
-]</pre>
-            
-            <a href="/api-test.html" class="try-it-out">Try it out</a>
-        </div>
-        
-        <div class="endpoint">
-            <h3><span class="method get">GET</span> /prayerTimes</h3>
-            <p>Retrieve prayer times for a specific city and date range.</p>
-            
-            <h4>Query Parameters:</h4>
-            <table class="parameter-table">
-                <thead>
-                    <tr>
-                        <th>Parameter</th>
-                        <th>Type</th>
-                        <th>Required</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="parameter-name">cityId</td>
-                        <td class="parameter-type">integer</td>
-                        <td>No</td>
-                        <td>Use ParentId if present, or _id if ParentId = null</td>
-                    </tr>
-                    <tr>
-                        <td class="parameter-name">startDate</td>
-                        <td class="parameter-type">string</td>
-                        <td>No</td>
-                        <td>The start date in YYYY-MM-DD format (defaults to today if not provided)</td>
-                    </tr>
-                    <tr>
-                        <td class="parameter-name">endDate</td>
-                        <td class="parameter-type">string</td>
-                        <td>No</td>
-                        <td>The end date in YYYY-MM-DD format (if not provided, only returns data for the start date)</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <h4>Response Example:</h4>
-            <pre class="response-example">[
-  {
-    "date": "2025-03-15",
-    "fajr": "05:14",
-    "sunrise": "06:40",
-    "dhuhr": "12:55",
-    "asr": "16:23",
-    "maghrib": "19:10",
-    "isha": "20:36"
-  },
-  {
-    "date": "2025-03-16",
-    "fajr": "05:12",
-    "sunrise": "06:39",
-    "dhuhr": "12:54",
-    "asr": "16:24",
-    "maghrib": "19:11",
-    "isha": "20:37"
-  }
-]</pre>
-            
-            <div class="note">
-                <p><strong>Note:</strong> If the end date is more than 30 days after the start date, it will be changed to 30 days after the start date.</p>
+    <main class="page">
+        <header class="top-head">
+            <h1 id="pageTitle">مواقيت الصلاة والأذان في الجزائر</h1>
+            <p id="todayDisplay" class="today-display">جار تحميل التاريخ...</p>
+        </header>
+
+        <section class="controls">
+            <div class="control-field">
+                <label for="citySelect">المدينة | City</label>
+                <select id="citySelect" aria-label="اختر المدينة"></select>
             </div>
-            
-            <a href="/api-test.html" class="try-it-out">Try it out</a>
-        </div>
-        
-        <h2>Error Handling</h2>
-        <p>All errors will be returned with appropriate HTTP status codes and a JSON body containing an error message.</p>
-        
-        <pre class="response-example">{
-  "error": "Invalid date format. Use YYYY-MM-DD."
-}</pre>
-        
-        <h2>Rate Limiting</h2>
-        <p>This API is rate-limited to 100 requests per hour per IP address. If you exceed this limit, you'll receive a 429 status code.</p>
-    </div>
+            <button id="refreshBtn" type="button">تحديث المواقيت | Refresh</button>
+        </section>
+
+        <section class="hero-row">
+            <article class="countdown-panel">
+                <p id="nextPrayerLabel" class="next-prayer-label">الصلاة القادمة | Next Prayer</p>
+                <p id="countdownValue" class="countdown-value">--:--:--</p>
+                <p id="countdownSub" class="countdown-sub">الوقت المتبقي | Remaining time</p>
+            </article>
+
+            <article class="clock-panel">
+                <p id="localTimeValue" class="local-time-value">--:--:--</p>
+                <p class="local-time-label">التوقيت المحلي في الجزائر | Local Time in Algiers</p>
+            </article>
+        </section>
+
+        <section id="prayerGrid" class="prayer-grid" aria-live="polite"></section>
+
+        <section class="meta-grid">
+            <article class="meta-box">
+                <h2>المدينة | City</h2>
+                <p id="selectedCityName">-</p>
+            </article>
+            <article class="meta-box">
+                <h2>التاريخ | Date</h2>
+                <p id="dataDate">-</p>
+            </article>
+            <article class="meta-box">
+                <h2>التوقيت | TimeZone</h2>
+                <p>Africa/Algiers (+1)</p>
+            </article>
+            <article class="meta-box">
+                <h2>الحالة | Status</h2>
+                <p id="statusMessage">جار تحميل المدن...</p>
+            </article>
+        </section>
+
+        <nav class="quick-links">
+            <a href="/api.html">توثيق الواجهة | API Docs</a>
+            <a href="/api-test.html">اختبار الواجهة | API Tester</a>
+        </nav>
+    </main>
+
+    <script src="index.js"></script>
 </body>
 </html>

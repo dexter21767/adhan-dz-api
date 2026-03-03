@@ -1,4 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
+const { getTodayYmd } = require('./date');
 
 class Database {
     constructor(config) {
@@ -27,7 +28,7 @@ class Database {
             query.push('MADINA_ID = ?');
         }
         if(!startDate)
-            startDate = new Date().toISOString().split('T')[0];
+            startDate = getTodayYmd();
         
         params.push(startDate);
         if(endDate){

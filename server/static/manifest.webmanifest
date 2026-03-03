@@ -1,0 +1,12 @@
+{
+  "name": "أذان الجزائر - مواقيت الصلاة",
+  "short_name": "أذان الجزائر",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ededed",
+  "theme_color": "#5d7600",
+  "description": "مواقيت الصلاة اليومية في الجزائر مع العد التنازلي للصلاة القادمة."
+}

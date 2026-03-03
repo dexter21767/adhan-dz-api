@@ -13,6 +13,16 @@ mkdir -p "$DOWNLOAD_DIR"
 mkdir -p "$DB_DESTINATION_DIR"
 mkdir -p "$TEMP_DIR"
 
+# Cleanup always runs, including on failures
+cleanup() {
+    echo "Cleaning temporary files..."
+    if [[ -n "$DOWNLOAD_DIR" && -d "$DOWNLOAD_DIR" ]]; then
+        rm -rf "$DOWNLOAD_DIR"
+    fi
+    echo "Cleanup complete."
+}
+trap cleanup EXIT
+
 # Function to calculate MD5 hash of a file
 calculate_md5() {
     md5sum "$1" | awk '{print $1}'
@@ -27,26 +37,6 @@ get_current_metadata() {
     fi
 }
 
-# Function to check if the APK is newer
-is_apk_newer() {
-    local current_metadata
-    current_metadata=$(get_current_metadata)
-
-    local current_version
-    current_version=$(echo "$current_metadata" | jq -r '.version')
-
-    local latest_version
-    latest_version=$(apkeep -a "$APP_ID" --version)
-
-    if [[ "$latest_version" != "$current_version" ]]; then
-        echo "New version available: $latest_version (current: $current_version)"
-        return 0  # APK is newer
-    else
-        echo "No new version available."
-        return 1  # APK is not newer
-    fi
-}
-
 # Function to download the APK using apkeep
 download_apk() {
     echo "Downloading APK for $APP_ID..."
@@ -58,16 +48,71 @@ download_apk() {
     fi
 }
 
+# Function to find the most recently downloaded APK/XAPK
+get_latest_downloaded_file() {
+    find "$DOWNLOAD_DIR" -maxdepth 1 -type f \( -name "*.apk" -o -name "*.xapk" \) \
+        -printf '%T@ %p\n' | sort -nr | head -n 1 | cut -d' ' -f2-
+}
+
+# Function to avoid reprocessing the same APK
+is_apk_changed() {
+    local apk_file="$1"
+    local current_metadata
+    current_metadata=$(get_current_metadata)
+
+    local current_md5
+    current_md5=$(echo "$current_metadata" | jq -r '.md5_hash // empty')
+    local new_md5
+    new_md5=$(calculate_md5 "$apk_file")
+
+    if [[ -n "$current_md5" && "$current_md5" == "$new_md5" ]]; then
+        echo "APK is unchanged. Skipping extraction."
+        return 1
+    fi
+
+    return 0
+}
+
+# Function to extract app version from decompiled apktool metadata
+extract_app_version() {
+    local apktool_file="$DECOMPILE_DIR/apktool.yml"
+    if [[ ! -f "$apktool_file" ]]; then
+        echo "unknown"
+        return 0
+    fi
+
+    local version_name
+    version_name=$(grep -m1 '^versionName:' "$apktool_file" | sed -E "s/^versionName:[[:space:]]*'?([^']*)'?.*$/\1/")
+
+    local version_code
+    version_code=$(grep -m1 '^versionCode:' "$apktool_file" | sed -E "s/^versionCode:[[:space:]]*'?([^']*)'?.*$/\1/")
+
+    if [[ -n "$version_name" && "$version_name" != "null" ]]; then
+        echo "$version_name"
+    elif [[ -n "$version_code" && "$version_code" != "null" ]]; then
+        echo "$version_code"
+    else
+        echo "unknown"
+    fi
+}
+
 # Function to handle .apk files
 handle_apk() {
     local apk_file="$1"
     echo "Handling .apk file: $apk_file"
 
+    if ! is_apk_changed "$apk_file"; then
+        return 0
+    fi
+
     # Decompile the APK
     decompile_apk "$apk_file"
 
+    local app_version
+    app_version=$(extract_app_version)
+
     # Search for .db files, copy them, and generate metadata directly
-    copy_db_files_and_generate_metadata "$apk_file"
+    copy_db_files_and_generate_metadata "$apk_file" "$app_version"
 }
 
 # Function to handle .xapk files
@@ -95,17 +140,25 @@ handle_xapk() {
 
     echo "Found main APK file: $main_apk"
 
+    if ! is_apk_changed "$main_apk"; then
+        return 0
+    fi
+
     # Decompile the main APK
     decompile_apk "$main_apk"
 
+    local app_version
+    app_version=$(extract_app_version)
+
     # Search for .db files, copy them, and generate metadata directly
-    copy_db_files_and_generate_metadata "$main_apk"
+    copy_db_files_and_generate_metadata "$main_apk" "$app_version"
 }
 
 # Function to decompile the APK using apktool
 decompile_apk() {
     local apk_file="$1"
     echo "Decompiling APK: $apk_file..."
+    rm -rf "$DECOMPILE_DIR"
     if apktool d "$apk_file" -o "$DECOMPILE_DIR"; then
         echo "APK decompiled successfully to $DECOMPILE_DIR"
     else
@@ -117,6 +170,7 @@ decompile_apk() {
 # Function to find and copy the largest .db file and generate metadata
 copy_db_files_and_generate_metadata() {
     local apk_file="$1"
+    local app_version="$2"
     echo "Searching for .db files in $DECOMPILE_DIR/assets..."
     
     local db_files
@@ -138,12 +192,12 @@ copy_db_files_and_generate_metadata() {
             cp "$largest_db" "$DB_DESTINATION_DIR/$db_filename"
             
             # Generate metadata with the clean db filename
-            generate_metadata "$apk_file" "$db_filename"
+            generate_metadata "$apk_file" "$db_filename" "$app_version"
             return 0
         fi
     else
         echo "No .db files found."
-        generate_metadata "$apk_file" ""  # Empty filename if no DB found
+        generate_metadata "$apk_file" "" "$app_version"  # Empty filename if no DB found
         return 1
     fi
 }
@@ -152,8 +206,7 @@ copy_db_files_and_generate_metadata() {
 generate_metadata() {
     local apk_file="$1"
     local db_filename="$2"
-    local version
-    version=$(apkeep -a "$APP_ID" --version)
+    local app_version="$3"
 
     local md5_hash
     md5_hash=$(calculate_md5 "$apk_file")
@@ -161,7 +214,7 @@ generate_metadata() {
     local metadata
     metadata=$(jq -n \
         --arg app_id "$APP_ID" \
-        --arg version "$version" \
+        --arg version "$app_version" \
         --arg md5_hash "$md5_hash" \
         --arg db_filename "$db_filename" \
         '{app_id: $app_id, version: $version, md5_hash: $md5_hash, db_filename: $db_filename}')
@@ -170,39 +223,25 @@ generate_metadata() {
     echo "Metadata saved to $METADATA_FILE with database filename: $db_filename"
 }
 
-# Function to delete the outputdir
-cleanup() {
-    echo "Deleting $DECOMPILE_DIR and $TEMP_DIR..."
-    rm -rf "$DECOMPILE_DIR"
-    rm -rf "$TEMP_DIR"
-    echo "Cleanup complete."
-}
-
 # Main script
-if is_apk_newer; then
-    download_apk
+download_apk
 
-    # Find the downloaded file (either .apk or .xapk)
-    downloaded_file=$(find "$DOWNLOAD_DIR" -type f \( -name "*.apk" -o -name "*.xapk" \) | head -n 1)
+# Find the downloaded file (either .apk or .xapk)
+downloaded_file=$(get_latest_downloaded_file)
 
-    if [[ -z "$downloaded_file" ]]; then
-        echo "No APK or XAPK file found in $DOWNLOAD_DIR."
-        exit 1
-    fi
+if [[ -z "$downloaded_file" ]]; then
+    echo "No APK or XAPK file found in $DOWNLOAD_DIR."
+    exit 1
+fi
 
-    echo "Found downloaded file: $downloaded_file"
+echo "Found downloaded file: $downloaded_file"
 
-    # Handle the file based on its extension
-    if [[ "$downloaded_file" == *.apk ]]; then
-        handle_apk "$downloaded_file"
-    elif [[ "$downloaded_file" == *.xapk ]]; then
-        handle_xapk "$downloaded_file"
-    else
-        echo "Unsupported file format: $downloaded_file"
-        exit 1
-    fi
-
-    cleanup
+# Handle the file based on its extension
+if [[ "$downloaded_file" == *.apk ]]; then
+    handle_apk "$downloaded_file"
+elif [[ "$downloaded_file" == *.xapk ]]; then
+    handle_xapk "$downloaded_file"
 else
-    echo "Skipping download and decompilation. APK is up to date."
+    echo "Unsupported file format: $downloaded_file"
+    exit 1
 fi

@@ -1,7 +1,7 @@
 require('dotenv').config();
 const path = require('path');
 const metaDir = process.env.META_DIR || './../output';
-const metadata = require(path.join(metaDir,"/metadata.json"));
+const metadata = require(path.join(metaDir,"metadata.json"));
 
 const config = {
     db: path.join(metaDir,metadata.db_filename),

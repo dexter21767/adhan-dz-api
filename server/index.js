@@ -1,6 +1,7 @@
 const express = require('express');
 const config = require('./config');
 const Database = require('./db');
+const { getTodayYmd, addDaysToYmd } = require('./date');
 
 const app = express();
 const db = new Database(config);
@@ -25,7 +26,7 @@ app.get('/cities', async (req, res) => {
 
 app.get('/prayerTimes', async (req, res) => {
     const { cityId, startDate, endDate } = req.query;
-    if (cityId && isNaN(parseInt(cityId))) {
+    if (cityId && !/^\d+$/.test(cityId)) {
         return res.status(400).json({ error: 'Invalid cityId. It must be an integer.' });
     }
 
@@ -35,14 +36,11 @@ app.get('/prayerTimes', async (req, res) => {
     }
 
     const query = {cityId};
-    query.startDate = startDate || new Date().toISOString().split('T')[0];
+    query.startDate = startDate || getTodayYmd();
     if(endDate){
-        const start = new Date(query.startDate);
-        const end = new Date(endDate);
-        if (end > start) {
-            const maxEndDate = new Date(start);
-            maxEndDate.setDate(start.getDate() + 30);
-            query.endDate = end > maxEndDate ? maxEndDate.toISOString().split('T')[0] : endDate;
+        if (endDate > query.startDate) {
+            const maxEndDate = addDaysToYmd(query.startDate, 30);
+            query.endDate = endDate > maxEndDate ? maxEndDate : endDate;
         }
     }
     db.getPrayerTimes(query).then((prayerTimes) => {
