@@ -19,7 +19,7 @@ RUN wget https://github.com/EFForg/apkeep/releases/download/0.17.0/apkeep-x86_64
 # Install apktool
 RUN wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool -O /usr/local/bin/apktool \
     && chmod +x /usr/local/bin/apktool \
-    && wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.7.0.jar -O /usr/local/bin/apktool.jar \
+    && wget https://github.com/iBotPeaches/Apktool/releases/download/v3.0.1/apktool_3.0.1.jar -O /usr/local/bin/apktool.jar \
     && chmod +x /usr/local/bin/apktool.jar
 
 # Create directories for the script and output
