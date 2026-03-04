@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'adhan-dz-static-v1';
+const STATIC_CACHE = 'adhan-dz-static-v3';
 const RUNTIME_CACHE = 'adhan-dz-runtime-v1';
 
 const STATIC_ASSETS = [
@@ -7,6 +7,13 @@ const STATIC_ASSETS = [
   '/index.css',
   '/index.js',
   '/manifest.webmanifest',
+  '/pwa-icons/logo.png',
+  '/pwa-icons/favicon-16x16.png',
+  '/pwa-icons/favicon-32x32.png',
+  '/pwa-icons/favicon.ico',
+  '/pwa-icons/apple-touch-icon-180x180.png',
+  '/pwa-icons/icon-192x192.png',
+  '/pwa-icons/icon-512x512.png',
   '/api.html',
   '/api.css',
   '/api-test.html',

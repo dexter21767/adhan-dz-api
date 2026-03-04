@@ -6,7 +6,21 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ededed",
-  "theme_color": "#5d7600",
-  "description": "مواقيت الصلاة اليومية في الجزائر مع العد التنازلي للصلاة القادمة."
+  "background_color": "#db8a02",
+  "theme_color": "#db8a02",
+  "description": "مواقيت الصلاة اليومية في الجزائر مع العد التنازلي للصلاة القادمة.",
+  "icons": [
+    {
+      "src": "/pwa-icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
