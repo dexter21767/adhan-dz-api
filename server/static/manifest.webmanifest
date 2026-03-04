@@ -3,12 +3,12 @@
   "short_name": "أذان الجزائر",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "https://adhan-dz.dexter21767.com/",
+  "scope": "https://adhan-dz.dexter21767.com/",
   "display": "standalone",
   "background_color": "#db8a02",
   "theme_color": "#db8a02",
-  "description": "مواقيت الصلاة اليومية في الجزائر مع العد التنازلي للصلاة القادمة.",
+  "description": "مواقيت الصلاة اليومية في الجزائر.",
   "icons": [
     {
       "src": "/pwa-icons/icon-192x192.png",
