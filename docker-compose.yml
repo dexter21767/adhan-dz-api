@@ -22,3 +22,13 @@ services:
       - TZ=Africa/Algiers
     restart: always
     hostname: adhan-server
+    depends_on:
+      extractor:
+        condition: service_completed_successfully
+    networks:
+      - nginx
+
+
+networks:
+  nginx:
+    external: true
