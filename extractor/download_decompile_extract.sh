@@ -75,25 +75,18 @@ is_apk_changed() {
 
 # Function to extract app version from decompiled apktool metadata
 extract_app_version() {
-    local apktool_file="$DECOMPILE_DIR/apktool.yml"
-    if [[ ! -f "$apktool_file" ]]; then
+    local manifest_file="$TEMP_DIR/manifest.json"
+    if [[ ! -f "$manifest_file" ]]; then
         echo "unknown"
         return 0
     fi
 
-    local version_name
-    version_name=$(grep -m1 '^versionName:' "$apktool_file" | sed -E "s/^versionName:[[:space:]]*'?([^']*)'?.*$/\1/")
+    # Extract version_code as integer if possible, version_name as string
+    local version_code version_name
+    version_code=$(jq -r '.version_code // .versionCode // empty' "$manifest_file" 2>/dev/null)
+    version_name=$(jq -r '.version_name // .versionName // "unknown"' "$manifest_file" 2>/dev/null)
 
-    local version_code
-    version_code=$(grep -m1 '^versionCode:' "$apktool_file" | sed -E "s/^versionCode:[[:space:]]*'?([^']*)'?.*$/\1/")
-
-    if [[ -n "$version_name" && "$version_name" != "null" ]]; then
-        echo "$version_name"
-    elif [[ -n "$version_code" && "$version_code" != "null" ]]; then
-        echo "$version_code"
-    else
-        echo "unknown"
-    fi
+    echo $version_code
 }
 
 # Function to handle .apk files
@@ -211,12 +204,20 @@ generate_metadata() {
     local md5_hash
     md5_hash=$(calculate_md5 "$apk_file")
 
+    # If version_code is null, set as null, else as number
+    local version_code_jq
+    if [[ "$app_version" == "null" ]]; then
+        version_code_jq="null"
+    else
+        version_code_jq=$app_version
+    fi
+
     local metadata
     metadata=$(jq -n \
         --arg app_id "$APP_ID" \
-        --arg version "$app_version" \
         --arg md5_hash "$md5_hash" \
         --arg db_filename "$db_filename" \
+        --argjson version "$version_code_jq" \
         '{app_id: $app_id, version: $version, md5_hash: $md5_hash, db_filename: $db_filename}')
 
     echo "$metadata" > "$METADATA_FILE"
