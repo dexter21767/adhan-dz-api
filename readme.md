@@ -127,6 +127,38 @@ GET /prayerTimes?cityId=1&startDate=2025-03-15&endDate=2025-03-17
 ]
 ```
 
+#### GET /hijriGeoDate
+Returns Gregorian and Hijri date mappings with localized full-date text (English and Arabic)
+
+**Query Parameters:**
+- `date` (optional, string): Single date in YYYY-MM-DD format (alias for `startDate`)
+- `startDate` (optional, string): Start date in YYYY-MM-DD format (defaults to today if neither `date` nor `startDate` is provided)
+- `endDate` (optional, string): End date in YYYY-MM-DD format (if not provided, only returns data for the start date)
+
+**Notes:**
+- If `endDate` is more than 30 days after `startDate`, it is capped to `startDate + 30 days`.
+- Response includes raw dates and full text dates in both English and Arabic.
+
+**Example Requests:**
+```
+GET /hijriGeoDate?date=2018-01-01
+GET /hijriGeoDate?startDate=2018-01-01&endDate=2018-01-03
+```
+
+**Example Response:**
+```json
+[
+  {
+    "GeoDate": "2018-01-01",
+    "HijriDate": "13-04-1439",
+    "GeoDateEn": "1 January 2018",
+    "HijriDateEn": "13 Rabi' al-Thani 1439",
+    "GeoDateAr": "١ يناير ٢٠١٨",
+    "HijriDateAr": "١٣ ربيع الآخر ١٤٣٩"
+  }
+]
+```
+
 ## Deployment Options
 
 ### Local Deployment

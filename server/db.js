@@ -42,6 +42,26 @@ class Database {
         return this.query(sql, params);
     }
 
+    getHijriGeoDates({ startDate, endDate }) {
+        const query = [];
+        const params = [];
+
+        if (!startDate) {
+            startDate = getTodayYmd();
+        }
+
+        params.push(startDate);
+        if (endDate) {
+            params.push(endDate);
+            query.push('GeoDate BETWEEN ? AND ?');
+        } else {
+            query.push('GeoDate = ?');
+        }
+
+        const sql = `SELECT GeoDate, HijriDate FROM itc_tab_hijri_geo_date WHERE ${query.join(' AND ')}`;
+        return this.query(sql, params);
+    }
+
     close() {
         return new Promise((resolve, reject) => {
             this.db.close((err) => {
