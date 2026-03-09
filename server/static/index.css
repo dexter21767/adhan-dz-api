@@ -281,8 +281,11 @@ body {
 }
 
 .date-variants {
-    white-space: pre-line;
     line-height: 1.45;
+}
+
+.date-line {
+    display: block;
 }
 
 #statusMessage.error {

@@ -362,18 +362,29 @@ function clearPrayerData() {
     countdownSubEl.textContent = 'الوقت المتبقي | Remaining time';
 }
 
-function buildDateVariantsText(rawValue, arValue, enValue) {
-    const lines = [];
-    if (rawValue) {
-        lines.push(rawValue);
+function renderDateVariants(container, { rawValue, arValue, enValue }) {
+    container.innerHTML = '';
+
+    const appendLine = (value, className, dir) => {
+        if (!value) {
+            return;
+        }
+        const line = document.createElement('span');
+        line.className = `date-line ${className}`;
+        if (dir) {
+            line.dir = dir;
+        }
+        line.textContent = value;
+        container.appendChild(line);
+    };
+
+    appendLine(rawValue, 'date-line-raw', 'ltr');
+    appendLine(arValue, 'date-line-ar', 'rtl');
+    appendLine(enValue, 'date-line-en', 'ltr');
+
+    if (!container.childElementCount) {
+        container.textContent = '-';
     }
-    if (arValue) {
-        lines.push(arValue);
-    }
-    if (enValue) {
-        lines.push(enValue);
-    }
-    return lines.length > 0 ? lines.join('\n') : '-';
 }
 
 function setDateDisplays(geoDate, hijriRow) {
@@ -383,17 +394,17 @@ function setDateDisplays(geoDate, hijriRow) {
         return;
     }
 
-    geoDateDisplayEl.textContent = buildDateVariantsText(
-        geoDate,
-        hijriRow.GeoDateAr,
-        hijriRow.GeoDateEn
-    );
+    renderDateVariants(geoDateDisplayEl, {
+        rawValue: geoDate,
+        arValue: hijriRow.GeoDateAr,
+        enValue: hijriRow.GeoDateEn,
+    });
 
-    hijriDateDisplayEl.textContent = buildDateVariantsText(
-        hijriRow.HijriDate,
-        hijriRow.HijriDateAr,
-        hijriRow.HijriDateEn
-    );
+    renderDateVariants(hijriDateDisplayEl, {
+        rawValue: hijriRow.HijriDate,
+        arValue: hijriRow.HijriDateAr,
+        enValue: hijriRow.HijriDateEn,
+    });
 }
 
 async function loadPrayerTimesForSelectedCity() {
