@@ -153,7 +153,7 @@ GET /hijriGeoDate?startDate=2018-01-01&endDate=2018-01-03
     "HijriDate": "13-04-1439",
     "GeoDateEn": "1 January 2018",
     "HijriDateEn": "13 Rabi' al-Thani 1439",
-    "GeoDateAr": "١ يناير ٢٠١٨",
+    "GeoDateAr": "١ جانفي ٢٠١٨",
     "HijriDateAr": "١٣ ربيع الآخر ١٤٣٩"
   }
 ]

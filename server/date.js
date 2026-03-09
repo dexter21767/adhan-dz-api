@@ -65,8 +65,6 @@ const HIJRI_MONTH_NAMES_AR = [
     'ذو الحجة',
 ];
 
-const ARABIC_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-
 function getTodayYmd() {
     return toYmdLocal(new Date());
 }
@@ -110,10 +108,6 @@ function parseDmy(dmy) {
     return { year, month, day };
 }
 
-function toArabicDigits(value) {
-    return String(value).replace(/\d/g, (digit) => ARABIC_DIGITS[Number(digit)]);
-}
-
 function formatGregorianDateEn(ymd) {
     const parsed = parseYmd(ymd);
     if (!parsed) {
@@ -129,7 +123,7 @@ function formatGregorianDateAr(ymd) {
         return null;
     }
 
-    return `${toArabicDigits(parsed.day)} ${GREGORIAN_MONTH_NAMES_AR[parsed.month - 1]} ${toArabicDigits(parsed.year)}`;
+    return `${parsed.day} ${GREGORIAN_MONTH_NAMES_AR[parsed.month - 1]} ${parsed.year}`;
 }
 
 function formatHijriDateEn(hijriDate) {
@@ -147,7 +141,7 @@ function formatHijriDateAr(hijriDate) {
         return null;
     }
 
-    return `${toArabicDigits(parsed.day)} ${HIJRI_MONTH_NAMES_AR[parsed.month - 1]} ${toArabicDigits(parsed.year)}`;
+    return `${parsed.day} ${HIJRI_MONTH_NAMES_AR[parsed.month - 1]} ${parsed.year}`;
 }
 
 module.exports = {
