@@ -47,7 +47,8 @@ const changeCityBtn = document.getElementById('changeCityBtn');
 const pageTitleEl = document.getElementById('pageTitle');
 const todayDisplayEl = document.getElementById('todayDisplay');
 const selectedCityNameEl = document.getElementById('selectedCityName');
-const dataDateEl = document.getElementById('dataDate');
+const geoDateDisplayEl = document.getElementById('geoDateDisplay');
+const hijriDateDisplayEl = document.getElementById('hijriDateDisplay');
 const statusMessageEl = document.getElementById('statusMessage');
 const prayerGridEl = document.getElementById('prayerGrid');
 const nextPrayerLabelEl = document.getElementById('nextPrayerLabel');
@@ -361,6 +362,40 @@ function clearPrayerData() {
     countdownSubEl.textContent = 'الوقت المتبقي | Remaining time';
 }
 
+function buildDateVariantsText(rawValue, arValue, enValue) {
+    const lines = [];
+    if (rawValue) {
+        lines.push(rawValue);
+    }
+    if (arValue) {
+        lines.push(arValue);
+    }
+    if (enValue) {
+        lines.push(enValue);
+    }
+    return lines.length > 0 ? lines.join('\n') : '-';
+}
+
+function setDateDisplays(geoDate, hijriRow) {
+    if (!geoDate || !hijriRow) {
+        geoDateDisplayEl.textContent = geoDate || '-';
+        hijriDateDisplayEl.textContent = '-';
+        return;
+    }
+
+    geoDateDisplayEl.textContent = buildDateVariantsText(
+        geoDate,
+        hijriRow.GeoDateAr,
+        hijriRow.GeoDateEn
+    );
+
+    hijriDateDisplayEl.textContent = buildDateVariantsText(
+        hijriRow.HijriDate,
+        hijriRow.HijriDateAr,
+        hijriRow.HijriDateEn
+    );
+}
+
 async function loadPrayerTimesForSelectedCity() {
     const selectedOption = citySelect.options[citySelect.selectedIndex];
     const selectedCityId = citySelect.value;
@@ -368,6 +403,7 @@ async function loadPrayerTimesForSelectedCity() {
 
     if (!selectedCityId || !queryCityId) {
         setStatus('اختر مدينة. | Select a city.', true);
+        setDateDisplays(null, null);
         clearPrayerData();
         return;
     }
@@ -386,10 +422,13 @@ async function loadPrayerTimesForSelectedCity() {
     const tomorrowYmd = addDaysToYmd(todayYmd, 1);
 
     try {
-        const rows = await fetchJson(`/prayerTimes?cityId=${encodeURIComponent(queryCityId)}&startDate=${todayYmd}&endDate=${tomorrowYmd}`);
+        const [rows, hijriRows] = await Promise.all([
+            fetchJson(`/prayerTimes?cityId=${encodeURIComponent(queryCityId)}&startDate=${todayYmd}&endDate=${tomorrowYmd}`),
+            fetchJson(`/hijriGeoDate?date=${todayYmd}`).catch(() => []),
+        ]);
 
         if (!Array.isArray(rows) || rows.length === 0) {
-            dataDateEl.textContent = '-';
+            setDateDisplays(null, null);
             clearPrayerData();
             setStatus('لا توجد مواقيت متاحة لهذه المدينة. | No prayer times found for this city.', true);
             return;
@@ -403,12 +442,17 @@ async function loadPrayerTimesForSelectedCity() {
         state.todayRow = todayRow;
         state.tomorrowRow = tomorrowRow;
 
-        dataDateEl.textContent = todayRow.GeoDate || todayYmd;
+        const displayedGeoDate = todayRow.GeoDate || todayYmd;
+        const todayHijriRow = Array.isArray(hijriRows)
+            ? (hijriRows.find((row) => row.GeoDate === displayedGeoDate) || hijriRows[0] || null)
+            : null;
+
+        setDateDisplays(displayedGeoDate, todayHijriRow);
         renderPrayerCards(todayRow);
         startTicking();
         setStatus('تم تحميل المواقيت. | Prayer times loaded.');
     } catch (error) {
-        dataDateEl.textContent = '-';
+        setDateDisplays(null, null);
         clearPrayerData();
         setStatus(`تعذر تحميل المواقيت. | Unable to load prayer times (${error.message}).`, true);
     }

@@ -261,7 +261,7 @@ body {
 .meta-grid {
     margin-top: 16px;
     display: grid;
-    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    grid-template-columns: repeat(5, minmax(160px, 1fr));
     gap: 10px;
 }
 
@@ -278,6 +278,11 @@ body {
 .meta-box p {
     margin: 6px 0 0;
     font-size: 1rem;
+}
+
+.date-variants {
+    white-space: pre-line;
+    line-height: 1.45;
 }
 
 #statusMessage.error {
@@ -310,7 +315,7 @@ body {
     }
 
     .meta-grid {
-        grid-template-columns: repeat(2, minmax(180px, 1fr));
+        grid-template-columns: repeat(3, minmax(180px, 1fr));
     }
 }
 
