@@ -369,7 +369,7 @@ function renderDateVariants(container, { rawValue, arValue, enValue }) {
         if (!value) {
             return;
         }
-        const line = document.createElement('span');
+        const line = document.createElement('bdi');
         line.className = `date-line ${className}`;
         if (dir) {
             line.dir = dir;

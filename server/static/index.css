@@ -286,6 +286,16 @@ body {
 
 .date-line {
     display: block;
+    unicode-bidi: isolate;
+}
+
+.date-line-raw,
+.date-line-en {
+    direction: ltr;
+}
+
+.date-line-ar {
+    direction: rtl;
 }
 
 #statusMessage.error {
