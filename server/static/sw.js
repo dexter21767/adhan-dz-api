@@ -1,9 +1,10 @@
-const STATIC_CACHE = 'adhan-dz-static-v3';
-const RUNTIME_CACHE = 'adhan-dz-runtime-v1';
+const APP_VERSION = '__APP_VERSION__';
+const STATIC_CACHE = `adhan-dz-static-v${APP_VERSION}`;
+const RUNTIME_CACHE = `adhan-dz-runtime-v${APP_VERSION}`;
+const VERSION_PARAM = `?v=${encodeURIComponent(APP_VERSION)}`;
+const API_PATHS = new Set(['/cities', '/prayerTimes', '/hijriGeoDate']);
 
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
+const STATIC_ASSET_PATHS = [
   '/index.css',
   '/index.js',
   '/manifest.webmanifest',
@@ -14,9 +15,7 @@ const STATIC_ASSETS = [
   '/pwa-icons/apple-touch-icon-180x180.png',
   '/pwa-icons/icon-192x192.png',
   '/pwa-icons/icon-512x512.png',
-  '/api.html',
   '/api.css',
-  '/api-test.html',
   '/api-test.css',
   '/api-test.js',
   '/icons/fajr.svg',
@@ -25,6 +24,17 @@ const STATIC_ASSETS = [
   '/icons/asr.svg',
   '/icons/maghrib.svg',
   '/icons/isha.svg'
+];
+
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  `/index.html${VERSION_PARAM}`,
+  '/api.html',
+  `/api.html${VERSION_PARAM}`,
+  '/api-test.html',
+  `/api-test.html${VERSION_PARAM}`,
+  ...STATIC_ASSET_PATHS.flatMap((assetPath) => [assetPath, `${assetPath}${VERSION_PARAM}`]),
 ];
 
 self.addEventListener('install', (event) => {
@@ -80,6 +90,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (url.pathname === '/sw.js') {
+    return;
+  }
+
   if (event.request.mode === 'navigate') {
     event.respondWith(
       networkFirst(event.request, RUNTIME_CACHE)
@@ -88,7 +102,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.pathname === '/cities' || url.pathname === '/prayerTimes') {
+  if (API_PATHS.has(url.pathname)) {
     event.respondWith(networkFirst(event.request, RUNTIME_CACHE));
     return;
   }

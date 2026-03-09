@@ -1,6 +1,9 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const config = require('./config');
 const Database = require('./db');
+const { version: appVersion } = require('./package.json');
 const {
     getTodayYmd,
     addDaysToYmd,
@@ -12,13 +15,55 @@ const {
 
 const app = express();
 const db = new Database(config);
+const staticDir = path.join(__dirname, 'static');
+const versionedHtmlRoutes = {
+    '/': 'index.html',
+    '/index.html': 'index.html',
+    '/api.html': 'api.html',
+    '/api-test.html': 'api-test.html',
+};
+
+const templateCache = {
+    html: Object.fromEntries(
+        Object.values(versionedHtmlRoutes)
+            .filter((value, index, values) => values.indexOf(value) === index)
+            .map((fileName) => [fileName, fs.readFileSync(path.join(staticDir, fileName), 'utf8')])
+    ),
+    manifest: fs.readFileSync(path.join(staticDir, 'manifest.webmanifest'), 'utf8'),
+    sw: fs.readFileSync(path.join(staticDir, 'sw.js'), 'utf8'),
+};
+
+function injectAppVersion(template) {
+    return template.replace(/__APP_VERSION__/g, appVersion);
+}
 
 const cacheStatic = {
-    setHeaders: (res, path) => {
+    setHeaders: (res, filePath) => {
+        void filePath;
         // Cache for 1 day
         res.setHeader('Cache-Control', 'public, max-age=86400');
     }
 };
+
+app.get('/sw.js', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.type('application/javascript');
+    res.send(injectAppVersion(templateCache.sw));
+});
+
+app.get('/manifest.webmanifest', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.type('application/manifest+json');
+    res.send(injectAppVersion(templateCache.manifest));
+});
+
+Object.entries(versionedHtmlRoutes).forEach(([routePath, fileName]) => {
+    app.get(routePath, (req, res) => {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.type('text/html');
+        res.send(injectAppVersion(templateCache.html[fileName]));
+    });
+});
 
 app.use('/', express.static('static',cacheStatic));
 app.use('/db', express.static(config.metaDir, cacheStatic));

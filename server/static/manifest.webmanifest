@@ -11,13 +11,13 @@
   "description": "مواقيت الصلاة اليومية في الجزائر.",
   "icons": [
     {
-      "src": "/pwa-icons/icon-192x192.png",
+      "src": "/pwa-icons/icon-192x192.png?v=__APP_VERSION__",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa-icons/icon-512x512.png",
+      "src": "/pwa-icons/icon-512x512.png?v=__APP_VERSION__",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"

@@ -1,6 +1,7 @@
 const STORAGE_KEY = 'adhan_dz_city_selection';
 const API_BASE_URL = 'https://adhan-dz.dexter21767.com';
 const ALGIERS_TZ = 'Africa/Algiers';
+const APP_VERSION = document.documentElement.dataset.appVersion || 'dev';
 
 const PRAYER_FIELDS = [
     { key: 'Fajr', label: 'Fajr', labelAr: 'الفجر', iconSrc: '/icons/fajr.svg', iconAlt: 'Fajr icon', iconFallback: '◔' },
@@ -87,7 +88,7 @@ function registerServiceWorker() {
     }
 
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {
+        navigator.serviceWorker.register(`/sw.js?v=${encodeURIComponent(APP_VERSION)}`).catch(() => {
             // Ignore service worker registration failures.
         });
     });
